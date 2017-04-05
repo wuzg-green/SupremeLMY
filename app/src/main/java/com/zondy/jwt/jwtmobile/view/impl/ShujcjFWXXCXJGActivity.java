@@ -7,13 +7,19 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.tuesda.walker.circlerefresh.CircleRefreshLayout;
@@ -39,23 +45,19 @@ import static com.zondy.jwt.jwtmobile.R.id.mapView;
  */
 
 public class ShujcjFWXXCXJGActivity extends BaseActivity implements View.OnClickListener {
+//    @BindView(R.id.list)
+//    ListView list;
+//    @BindView(R.id.refresh_layout)
+//    CircleRefreshLayout refreshLayout;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    @BindView(R.id.wv_webview)
-    WebView wvWebview;
-    @BindView(R.id.tv_webview)
-    TextView tvWebview;
-    @BindView(R.id.btn_ceshi)
-    Button btnCeshi;
-    @BindView(R.id.list)
-    ListView list;
-    @BindView(R.id.refresh_layout)
-    CircleRefreshLayout refreshLayout;
     @BindView(R.id.mapview)
     MapView mapView;
     MapManager mapManager;
 
-
+    private LinearLayout llBottomCollapse;
+    private ImageView iv;
+    private ScrollView scExpanded;
     @Override
     public int setCustomContentViewResourceId() {
         return R.layout.activity_shujcj_fwxxcxjg;
@@ -73,10 +75,22 @@ public class ShujcjFWXXCXJGActivity extends BaseActivity implements View.OnClick
         initBottomSheet();
         initViews();
 //        loadWeb();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        iv.layout(0,100,1080,700);
+        iv.invalidate();
+        iv.requestLayout();
     }
 
     private void initBottomSheet() {
         View bottomSheet = findViewById(R.id.bottom_sheet);
+        llBottomCollapse= (LinearLayout) findViewById(R.id.ll_bottom_collapse);
+        iv= (ImageView) findViewById(R.id.iv_fwxxcxjg);
+        scExpanded= (ScrollView) findViewById(R.id.sc_expand);
         BottomSheetBehavior behavior = BottomSheetBehavior.from(bottomSheet);
         behavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -85,30 +99,53 @@ public class ShujcjFWXXCXJGActivity extends BaseActivity implements View.OnClick
                 switch (newState) {
                     case 1:
                         state = "STATE_DRAGGING";
-                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "拖动状态jwt", true);
+//                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "拖动状态jwt", true);
                         break;
                     case 2:
                         state = "STATE_SETTLING";
-                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "到达终点状态前的位置jwt", true);
+//                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "到达终点状态前的位置jwt", true);
                         break;
                     case 3:
                         state = "STATE_EXPANDED";
-                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "展开模式jwt", true);
+//                        llBottomCollapse.setBackground(getDrawable(R.drawable.panda));
+//                        iv.setVisibility(View.VISIBLE);
+//                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "展开模式jwt", true);
                         break;
                     case 4:
                         state = "STATE_COLLAPSED";
-                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "折叠模式jwt", true);
+                        llBottomCollapse.setVisibility(View.VISIBLE);
+                        scExpanded.setVisibility(View.GONE);
+//                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, "折叠模式jwt", true);
+//                        iv.setVisibility(View.GONE);
                         break;
                     case 5:
                         state = "STATE_HIDDEN";
-                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, state, true);
+//                        ToastTool.getInstance().shortLength(ShujcjFWXXCXJGActivity.this, state, true);
                         break;
                 }
             }
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                Log.i("sheep", "onSlide: "+slideOffset+"-------"+iv.getMeasuredHeight()+"--------"+iv.getHeight()+"------"+iv.getMeasuredWidth()
+                +"--------"+iv.getWidth());
 
+                scExpanded.setVisibility(View.VISIBLE);
+                llBottomCollapse.setVisibility(View.GONE);
+                iv.layout(0,(int)(-(1-slideOffset)*510),1080,(int)(slideOffset*510));
+//                int a= (int) ((slideOffset-0.5)*iv.getMeasuredHeight()*2);
+//                iv.layout(0,(a-540),iv.getWidth(),a);
+//                if(slideOffset!=0){
+//                    iv.setVisibility(View.VISIBLE);
+//                }else {
+//                    iv.setVisibility(View.GONE);
+//                }
+                iv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                });
             }
         });
     }
@@ -132,15 +169,6 @@ public class ShujcjFWXXCXJGActivity extends BaseActivity implements View.OnClick
 //        }
 //    }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        //重写onKeyDown，当浏览网页，WebView可以后退时执行后退操作。
-        if (keyCode == KeyEvent.KEYCODE_BACK && wvWebview.canGoBack()) {
-            wvWebview.goBack();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 
     private void initParams() {
         mapManager = new MapManager(mapView, context);
@@ -212,7 +240,6 @@ public class ShujcjFWXXCXJGActivity extends BaseActivity implements View.OnClick
     private void initViews() {
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
-//        btnCeshi.setOnClickListener(this);
     }
 
     @Override
